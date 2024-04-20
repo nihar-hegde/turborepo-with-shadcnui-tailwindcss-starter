@@ -2,80 +2,125 @@
 
 This is an official starter Turborepo.
 
-## Using this example
+## Notes for setting up shadcnui and tailwindcss in a turborepo.
 
-Run the following command:
+Run the following command to start a default turborepo:
 
 ```sh
 npx create-turbo@latest
 ```
 
-## What's inside?
+1.  Go to packages/ui and install tailwindcss.
 
-This Turborepo includes the following packages/apps:
+    ```sh
+    npm install -D tailwindcss postcss autoprefixer
+    ```
 
-### Apps and Packages
+    create tailwind.config.ts file and postcss.config.js files
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+        add the below to postcss.config.js
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+        ```javascript
+         // eslint-disable-next-line no-undef
 
-### Utilities
+        module.exports = {
+        plugins: {
+        tailwindcss: {},
+        autoprefixer: {},
+        },
+        };
+        ```
 
-This Turborepo has some additional tools already setup for you:
+2.  Now install schadcnui cli
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+    ```sh
+     npx shadcn-ui@latest init
+    ```
 
-### Build
+    -> choose the default options (will change later)
 
-To build all apps and packages, run the following command:
+    -> copy the components folder and lib folder (auto created while installing shadcn ui.) inside the src.
+    -> create a styles folder inside src.
+    -> copy the globals.css file inside the styles folder.
 
-```
-cd my-turborepo
-pnpm build
-```
+3.  Inside packages/tsconfig.json add the follwing:
 
-### Develop
+    ```json
+    "baseUrl": ".",
+    "paths": {
+    "@ui/*": ["./src/*"],
+    "@ui/components/ui*": ["./src/components/ui*"]
+    }
+    ```
 
-To develop all apps and packages, run the following command:
+    mine looks like this
 
-```
-cd my-turborepo
-pnpm dev
-```
+    ```json
+    {
+      "extends": "@repo/typescript-config/react-library.json",
+      "compilerOptions": {
+        "outDir": "dist",
+        "baseUrl": ".",
+        "paths": {
+          "@ui/_": ["./src/_"],
+          "@ui/components/ui*": ["./src/components/ui*"]
+        }
+      },
+      "include": ["src"],
+      "exclude": ["node_modules", "dist"]
+    }
+    ```
 
-### Remote Caching
+4.  Change the path for css and aliases inside packages/components.json
+    ```json
+    {
+      "$schema": "https://ui.shadcn.com/schema.json",
+      "style": "default",
+      "rsc": true,
+      "tsx": true,
+      "tailwind": {
+        "config": "tailwind.config.ts",
+        "css": "src/styles/globals.css",
+        "baseColor": "slate",
+        "cssVariables": true,
+        "prefix": ""
+      },
+      "aliases": {
+        "components": "@ui/components",
+        "utils": "@ui/lib/utils"
+      }
+    }
+    ```
+5.  inside packages/typescript-config/nextjs.json change the paths
+    add the follwing path
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+    ```json
+    "paths": {
+      "@ui/*": ["../../packages/ui/src/*"]
+    }
+    ```
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
+6.  inside your next.js app apps/appname
 
-```
-cd my-turborepo
-npx turbo login
-```
+    ### make sure that inside package.json dependencies you have `"@repo/ui": "*",`
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+    -> install tailwindcss
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+    ```sh
+        npm install -D tailwindcss postcss autoprefixer
+    ```
 
-```
-npx turbo link
-```
+    -> inside tailwind.config.ts
+    export \* from "@repo/ui/tailwind.config";
 
-## Useful Links
+    -> inside postcss.config.js
+    module.exports = require("@repo/ui/postcss.config");
 
-Learn more about the power of Turborepo:
+    -> in app/layout.tsx change the globals.css import
+    `import "@repo/ui/globals.css";`
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+Do a npm install in the root folder just for good Measures.
+
+## Installing shadcn components
+
+    ### run the install command from the shadcn document inside packages/ui.
